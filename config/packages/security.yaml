@@ -1,0 +1,34 @@
+security:
+    providers:
+        auth0:
+            id: Elvi\AuthBundle\Security\JwtUserProvider
+    password_hashers:
+        Symfony\Component\Security\Core\User\InMemoryUser: auto
+    firewalls:
+        dev:
+            pattern: ^/(_(profiler|wdt)|css|images|js)/
+            security: false
+
+        main:
+            pattern: ^/docs
+            security: false
+            lazy: true
+
+        auth0_jwt_validate:
+            pattern: ^/
+            stateless: true
+            custom_authenticators:
+                - Elvi\AuthBundle\Security\JwtAuthorizer
+            provider: auth0
+
+            # activate different ways to authenticate
+            # https://symfony.com/doc/current/security.html#firewalls-authentication
+
+            # https://symfony.com/doc/current/security/impersonating_user.html
+            # switch_user: true
+
+    # Easy way to control access for large sections of your site
+    # Note: Only the *first* access control that matches will be used
+    access_control:
+        - { path: "^/docs", roles: PUBLIC_ACCESS }
+        - { path: "^/", roles: ROLE_USING_TOKEN } # <-- Make sure to change to ROLE_SERVICE_<YOUR_SERVICE_CODE>

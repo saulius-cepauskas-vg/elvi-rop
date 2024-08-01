@@ -1,0 +1,8 @@
+api_log:
+    enabled: true
+    storage:
+        database: false
+        kibana: true
+    remove:
+        headers:
+            - 'authorization'

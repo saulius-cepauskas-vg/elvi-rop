@@ -1,0 +1,5 @@
+sentry:
+    dsn: '%env(SENTRY_DSN)%'
+    options:
+        traces_sample_rate: '%env(float:SENTRY_TRACES_SAMPLE_RATE)%'
+        environment: '%kernel.environment%'

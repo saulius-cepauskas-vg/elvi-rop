@@ -1,0 +1,89 @@
+doctrine:
+    dbal:
+        default_connection: vom
+        connections:
+            vom:
+                driver:   pdo_mysql
+                host:     '%env(DOCTRINE_PERCONA_HOST)%'
+                port:     '%env(DOCTRINE_PERCONA_PORT)%'
+                user:     '%env(DOCTRINE_PERCONA_USER)%'
+                password: '%env(DOCTRINE_PERCONA_PASSWORD)%'
+                dbname:   '%env(DOCTRINE_PERCONA_DATABASE_VOM)%'
+                options:
+                    !php/const PDO::MYSQL_ATTR_SSL_CA: ''
+                    !php/const PDO::MYSQL_ATTR_SSL_VERIFY_SERVER_CERT: false
+                charset: utf8mb4
+                default_table_options:
+                    charset: utf8mb4
+                    collate: utf8mb4_unicode_ci
+            so:
+                driver:   pdo_mysql
+                host:     '%env(DOCTRINE_PERCONA_HOST)%'
+                port:     '%env(DOCTRINE_PERCONA_PORT)%'
+                user:     '%env(DOCTRINE_PERCONA_USER)%'
+                password: '%env(DOCTRINE_PERCONA_PASSWORD)%'
+                dbname:   '%env(DOCTRINE_PERCONA_DATABASE_SO)%'
+                options:
+                    !php/const PDO::MYSQL_ATTR_SSL_CA: ''
+                    !php/const PDO::MYSQL_ATTR_SSL_VERIFY_SERVER_CERT: false
+                charset: utf8mb4
+                default_table_options:
+                    charset: utf8mb4
+                    collate: utf8mb4_unicode_ci
+            logistics:
+                driver:   pdo_mysql
+                host:     '%env(DOCTRINE_PERCONA_HOST)%'
+                port:     '%env(DOCTRINE_PERCONA_PORT)%'
+                user:     '%env(DOCTRINE_PERCONA_USER)%'
+                password: '%env(DOCTRINE_PERCONA_PASSWORD)%'
+                dbname:   '%env(DOCTRINE_PERCONA_DATABASE_LOGISTICS)%'
+                options:
+                    !php/const PDO::MYSQL_ATTR_SSL_CA: ''
+                    !php/const PDO::MYSQL_ATTR_SSL_VERIFY_SERVER_CERT: false
+                charset: utf8mb4
+                default_table_options:
+                    charset: utf8mb4
+                    collate: utf8mb4_unicode_ci
+            pm2:
+                driver:   pdo_mysql
+                host:     '%env(DOCTRINE_PERCONA_HOST)%'
+                port:     '%env(DOCTRINE_PERCONA_PORT)%'
+                user:     '%env(DOCTRINE_PERCONA_USER)%'
+                password: '%env(DOCTRINE_PERCONA_PASSWORD)%'
+                dbname:   '%env(DOCTRINE_PERCONA_DATABASE_PM2)%'
+                options:
+                    !php/const PDO::MYSQL_ATTR_SSL_CA: ''
+                    !php/const PDO::MYSQL_ATTR_SSL_VERIFY_SERVER_CERT: false
+                charset: utf8mb4
+                default_table_options:
+                    charset: utf8mb4
+                    collate: utf8mb4_unicode_ci
+            dwh:
+                driver:   pdo_mysql
+                host:     '%env(DOCTRINE_DWH_HOST)%'
+                port:     '%env(DOCTRINE_DWH_PORT)%'
+                user:     '%env(DOCTRINE_DWH_USER)%'
+                password: '%env(DOCTRINE_DWH_PASSWORD)%'
+                dbname:   '%env(DOCTRINE_DWH_DATABASE)%'
+                options:
+                    !php/const PDO::MYSQL_ATTR_SSL_CA: ''
+                    !php/const PDO::MYSQL_ATTR_SSL_VERIFY_SERVER_CERT: false
+                charset: utf8mb4
+                default_table_options:
+                    charset: utf8mb4
+                    collate: utf8mb4_unicode_ci
+
+        # IMPORTANT: You MUST configure your server version,
+        # either here or in the DATABASE_URL env var (see .env file)
+        #server_version: '5.7'
+    orm:
+        auto_generate_proxy_classes: true
+        naming_strategy: doctrine.orm.naming_strategy.underscore_number_aware
+        auto_mapping: true
+        mappings:
+            App:
+                is_bundle: false
+                type: xml
+                dir: '%kernel.project_dir%/config/doctrine'
+                prefix: 'App\Entity'
+                alias: App

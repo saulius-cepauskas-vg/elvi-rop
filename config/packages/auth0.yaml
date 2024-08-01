@@ -1,0 +1,9 @@
+auth0:
+    sdk:
+        strategy: 'api'
+        domain: "%env(AUTH0_DOMAIN)%"
+        audiences: ["%env(AUTH0_AUDIENCE)%"]
+        client_id: "%env(AUTH0_CLIENT_ID)%"
+        client_secret: "%env(AUTH0_CLIENT_SECRET)%"
+        cookie_secret: "not-used-can-be-anything-non-empty"
+        token_cache: cache.elvi.jwks

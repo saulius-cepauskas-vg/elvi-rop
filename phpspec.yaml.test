@@ -1,0 +1,23 @@
+formatter.name: pretty
+
+suites:
+    App:
+        namespace: App
+        psr4_prefix: App
+        spec_path: 'tests/'
+        src_path: 'src/'
+        spec_prefix: 'Spec'
+
+extensions:
+    FriendsOfPhpSpec\PhpSpec\CodeCoverage\CodeCoverageExtension:
+        format:
+            - text
+            - php
+        output:
+            php: phpspec.cov
+        whitelist:
+            - src
+        blacklist: # optional
+            - src/AppBundle/spec
+        blacklist_files:
+            - src/Kernel.php

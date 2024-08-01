@@ -1,0 +1,14 @@
+services:
+    _defaults:
+        autowire: true
+        autoconfigure: true
+
+    Http\Factory\Guzzle\ServerRequestFactory: ~
+    Http\Factory\Guzzle\ResponseFactory: ~
+    Http\Factory\Guzzle\StreamFactory: ~
+    Http\Factory\Guzzle\UploadedFileFactory: ~
+
+    Psr\Http\Message\ServerRequestFactoryInterface: '@Http\Factory\Guzzle\ServerRequestFactory'
+    Psr\Http\Message\ResponseFactoryInterface: '@Http\Factory\Guzzle\ResponseFactory'
+    Psr\Http\Message\StreamFactoryInterface: '@Http\Factory\Guzzle\StreamFactory'
+    Psr\Http\Message\UploadedFileFactoryInterface: '@Http\Factory\Guzzle\UploadedFileFactory'
