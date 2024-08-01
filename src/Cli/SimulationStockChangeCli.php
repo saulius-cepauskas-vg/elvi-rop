@@ -98,7 +98,7 @@ class SimulationStockChangeCli extends Command
             $result
         );
 
-        $this->csv($csv, 'vendor_orders_simulation');
+        $this->csv($csv, sprintf('vo_simulation_%s', date('Y-m-d H:i:s')));
 
         return Command::SUCCESS;
     }
@@ -207,10 +207,6 @@ class SimulationStockChangeCli extends Command
 
         // order on monday/thursday
         $addDays = $today->format('N') === '1' ? 3 : 4;
-
-        // todo: remove me: temporary
-        $addDays = 0;
-
         $nextOrderDay = $today->modify(sprintf('+%d days', $addDays));
 
         return array_merge(
@@ -223,7 +219,8 @@ class SimulationStockChangeCli extends Command
                 $demand,
                 $vendorOrders,
                 $newInventory,
-                $iteration + 1
+                $iteration + 1,
+                $addDays
             )
         );
     }
@@ -442,7 +439,7 @@ class SimulationStockChangeCli extends Command
             'PS-6',
             'AO1D-90',
             'SH-ED',
-            'SER-FIT-STUDIO',
+//            'SER-FIT-STUDIO',
             'CDT-30',
             'LBHBLF73',
             'BTA-30',
@@ -587,7 +584,7 @@ class SimulationStockChangeCli extends Command
             'SB-2921',
             'RB-2278',
             'LBBLF52A',
-            'SER-CON',
+//            'SER-CON',
             'AOS-1',
             'AOSH-1',
             'CLEARS-50ml',
@@ -688,12 +685,12 @@ class SimulationStockChangeCli extends Command
             'CPS-250ml',
             'BSC-6',
             'AOHM-1',
-            'SER-CON-0-60',
+//            'SER-CON-0-60',
             'FPA-2',
             'BAA',
             'AV-AL-1',
             'BUEV-100',
-            'SER-REFIT-STUDIO',
+//            'SER-REFIT-STUDIO',
             'DMV-SH-3',
             'DSA-30',
             'LBHBLF73B',
@@ -713,7 +710,7 @@ class SimulationStockChangeCli extends Command
             'BSAIO-100',
             'DLLB-1',
             'ACCA-60',
-            'SER-FSS-STUDIO',
+//            'SER-FSS-STUDIO',
             'VGA-ED-60',
             'DLAH-1',
             'LBMR51D',
@@ -727,7 +724,7 @@ class SimulationStockChangeCli extends Command
             'AOSH-FP',
             'LNATG-A',
             'LBMR52C',
-            'SER-REFIT',
+//            'SER-REFIT',
             'BCA-100ml',
             'SUPF-MD',
             'LBMR64',
@@ -738,7 +735,7 @@ class SimulationStockChangeCli extends Command
             'EEM-720ml',
             'FLR',
             'PSB-1',
-            'SER-CON-STUDIO',
+//            'SER-CON-STUDIO',
             'SB-2939',
             'IREL-M',
             'SB-3004',
@@ -838,7 +835,7 @@ class SimulationStockChangeCli extends Command
             'TCTP-1',
             'LP-120ml',
             'CPK',
-            'SER-REFIT-M-90-180',
+//            'SER-REFIT-M-90-180',
             'SB-761',
             'EEA-100ml',
             'CS-ED',
