@@ -30,6 +30,29 @@ class LeadCalculator
         private CacheInterface $cache,
         private VomRepository $vomRepository,
         private Pm2Repository $pm2Repository,
+        private array $staticLeadProductIds = [
+            'DLTB-1',
+            'LIPC3',
+            'LIPC1',
+            'LFNPC2',
+            'DLAH-60',
+            'DLFA-ED',
+            'SB-2899',
+            'PUSOLB-1',
+            'SB-10057',
+            'SB-10056',
+            'LLRVC2',
+            'LSZC2',
+            'DLAH-1',
+            'SB-2901',
+            'DLLB-1',
+            'SB-2908',
+            'SB-2900',
+            'SB-10053',
+            'SB-10063',
+            'LTB-1',
+            'SB-10052',
+        ]
     ) {
         $this->lead = $this->getLeadData();
         $this->productVendorMap = $this->getProductVendorMap();
@@ -47,6 +70,17 @@ class LeadCalculator
 
     public function getLead(string $productId, string $variantId, array $groupOfVariantIds): Lead
     {
+        if (in_array($productId, $this->staticLeadProductIds, true)) {
+            return new Lead(
+                $productId,
+                $variantId,
+                120, // 4 months
+                48.989794855664, //  2 months
+                'static_product_lead_time_120_60',
+                0,
+            );
+        }
+
         return new Lead(
             $productId,
             $variantId,
