@@ -17,40 +17,40 @@ class ReorderPointCalculator
         private LeadCalculator $leadCalculator,
 
         private array $coefficientsOfService = [
-//            'A+ X' => 2.33, // 99%
-//            'A+ Y' => 1.88, // 97%
-//            'A+ Z' => 1.48, // 93%
-//
-//            'A X' => 1.88, // 97%
-//            'A Y' => 1.64, // 95%
-//            'A Z' => 1.48, // 93%
-//
-//            'B X' => 1.64, // 95%
-//            'B Y' => 1.28, // 90%
-//            'B Z' => 0.84, // 80%
-//
-//            'C X' => 0.84, // 80%
-//            'C Y' => 0, // 0%
-//            'C Z' => 0, // 0%
+            'A+ X' => 2.33, // 99%
+            'A+ Y' => 1.88, // 97%
+            'A+ Z' => 1.48, // 93%
+
+            'A X' => 1.88, // 97%
+            'A Y' => 1.64, // 95%
+            'A Z' => 1.48, // 93%
+
+            'B X' => 1.64, // 95%
+            'B Y' => 1.28, // 90%
+            'B Z' => 0.84, // 80%
+
+            'C X' => 0.84, // 80%
+            'C Y' => 0, // 0%
+            'C Z' => 0, // 0%
 
 // ----------------------------------------
 
 
-            'A+ X' => 1.88, // 97%
-            'A+ Y' => 1.64, // 95%
-            'A+ Z' => 1.48, // 93%
-
-            'A X' => 1.34, // 91%
-            'A Y' => 1.28, // 90%
-            'A Z' => 1.23, // 89%
-
-            'B X' => 1.01, // 85%
-            'B Y' => 0.84, // 80%
-            'B Z' => 0.52, // 70%
-
-            'C X' => 0.52, // 70%
-            'C Y' => 0, // 0%
-            'C Z' => 0, // 0%
+//            'A+ X' => 1.88, // 97%
+//            'A+ Y' => 1.64, // 95%
+//            'A+ Z' => 1.48, // 93%
+//
+//            'A X' => 1.34, // 91%
+//            'A Y' => 1.28, // 90%
+//            'A Z' => 1.23, // 89%
+//
+//            'B X' => 1.01, // 85%
+//            'B Y' => 0.84, // 80%
+//            'B Z' => 0.52, // 70%
+//
+//            'C X' => 0.52, // 70%
+//            'C Y' => 0, // 0%
+//            'C Z' => 0, // 0%
         ]
     ) {
     }
@@ -73,10 +73,13 @@ class ReorderPointCalculator
         $coefficientOfService = $this->getCoefficientOfService($variantId);
         $securityStock = $this->getSecurityStock($demand, $lead, $leadDaysAdjustment, $coefficientOfService);
 
+        // round up ROP 1.1 => 2 (ceil)
+        // round down Security Stock 0.9 => 0 (floor)
+
         $leadTimeInDays = $lead->averageLeadTimeInDays + $leadDaysAdjustment;
         $rop = $demand->demandAveragePerDay === null || $lead->averageLeadTimeInDays === null
             ? null :
-            floor($securityStock + $demand->demandAveragePerDay * $leadTimeInDays);
+            ceil($securityStock + $demand->demandAveragePerDay * $leadTimeInDays);
 
         return new ReorderPoint(
             $productId,
@@ -107,7 +110,7 @@ class ReorderPointCalculator
             $coefficientOfService * $demand->demandStandardDeviation * sqrt($leadTimeInDays)
             + $coefficientOfService * $demand->demandAveragePerDay * $lead->leadTimeStandardDeviation;
 
-        return ceil($stock);
+        return floor($stock);
     }
 
     private function getCoefficientOfService(string $variantId): float
