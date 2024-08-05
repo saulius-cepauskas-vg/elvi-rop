@@ -26,7 +26,7 @@ class DwhRepository
                     dwh_order_item
                 WHERE
                     order_active = 1
-                    AND cohort_order_created_at_year > 2022;
+                    AND cohort_order_created_at_year >= 2022;
             sql
         );
     }
