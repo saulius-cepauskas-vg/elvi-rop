@@ -55,7 +55,14 @@ class VariantGroupCalculator
         $dateFrom = $date->modify(sprintf('-%d year', $years));
         $dateTo = $date->modify('-1 day')->setTime(23, 59, 59);
 
-        $daysAdjustment = $dateTo->format('d');
+        $daysAdjustment = $dateFrom
+            ->setDate(
+                (int)$dateFrom->format('Y'),
+                (int)$dateFrom->format('m'),
+                1
+            )
+            ->diff($dateFrom)
+            ->days;
 
         $this->total = 0;
 
@@ -93,6 +100,10 @@ class VariantGroupCalculator
                 'Y-m-01',
                 strtotime(sprintf('-%d days', $daysAdjustment), strtotime($item['order_created_at']))
             );
+
+            if (($monthlyDemand[$item['variant_id']][$month] ?? null) === null) {
+                throw new \Exception(sprintf('Invalid month %s (range %s-%s)', $month, $dateFrom->format('Y-m-d'), $dateTo->format('Y-m-d')));
+            }
 
             $monthlyDemand[$item['variant_id']][$month] += $item['quantity'];
         }
