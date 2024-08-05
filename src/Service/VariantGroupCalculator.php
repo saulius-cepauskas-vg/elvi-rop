@@ -40,12 +40,16 @@ class VariantGroupCalculator
             'Z' => 10,
         ],
     ) {
-        $this->calculateVariantGroups($this->getDemand(), new DateTimeImmutable('2023-07-01 00:00:00'), 1);
     }
 
-    public function calculateVariantGroups(array $demand, DateTimeImmutable $dateFrom, int $years = 1): void
+    public function calculateVariantGroups(DateTimeImmutable $date, int $years = 1): void
     {
-        $dateTo = $dateFrom->modify(sprintf('+%d years', $years))->modify('-1 day')->setTime(23, 59, 59);
+        $demand = $this->getDemand();
+
+        $dateFrom = $date->modify(sprintf('-%d year', $years));
+        $dateTo = $date->modify('-1 day')->setTime(23, 59, 59);
+
+        $daysAdjustment = $dateTo->format('d');
 
         $this->total = 0;
 
@@ -79,7 +83,11 @@ class VariantGroupCalculator
                 }
             }
 
-            $month = date('Y-m-01', strtotime($item['order_created_at']));
+            $month = date(
+                'Y-m-01',
+                strtotime(sprintf('-%d days', $daysAdjustment), strtotime($item['order_created_at']))
+            );
+
             $monthlyDemand[$item['variant_id']][$month] += $item['quantity'];
         }
 
