@@ -44,6 +44,12 @@ class VariantGroupCalculator
 
     public function calculateVariantGroups(DateTimeImmutable $date, int $years = 1): void
     {
+        $this->localCache = [
+            'volume' => [],
+            'variation' => [],
+            'intersection' => [],
+        ];
+
         $demand = $this->getDemand();
 
         $dateFrom = $date->modify(sprintf('-%d year', $years));
