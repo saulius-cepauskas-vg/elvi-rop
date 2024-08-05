@@ -23,11 +23,14 @@ trait OutputTrait
         $io->table([], $table);
     }
 
-    protected function csv(array $data, string $name): void
+    protected function csv(array $data, string $name, bool $putHeader = true, string $mode = 'w'): void
     {
-        $fp = fopen(sprintf('var/%s.csv', $name), 'w');
+        $fp = fopen(sprintf('var/%s.csv', $name), $mode);
 
-        fputcsv($fp, array_keys(current($data)));
+        if ($putHeader) {
+            fputcsv($fp, array_keys(current($data)));
+        }
+
         foreach ($data as $fields) {
             fputcsv($fp, $fields);
         }
