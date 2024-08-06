@@ -91,7 +91,11 @@ class VariantGroupCalculator
             if (($monthlyDemand[$item['variant_id']] ?? null) === null) {
                 $monthlyDemand[$item['variant_id']] = [];
                 for ($i = 0; $i < 12 * $years; $i++) {
-                    $month = $dateFrom->modify(sprintf('+%d month', $i))->format('Y-m-01');
+                    $month = $dateFrom
+                        ->setDate((int)$dateFrom->format('Y'), (int)$dateFrom->format('m'), 1)
+                        ->modify(sprintf('+%d month', $i))
+                        ->format('Y-m-01');
+
                     $monthlyDemand[$item['variant_id']][$month] = 0;
                 }
             }
@@ -102,7 +106,14 @@ class VariantGroupCalculator
             );
 
             if (($monthlyDemand[$item['variant_id']][$month] ?? null) === null) {
-                throw new \Exception(sprintf('Invalid month %s (range %s-%s)', $month, $dateFrom->format('Y-m-d'), $dateTo->format('Y-m-d')));
+                throw new \Exception(
+                    sprintf(
+                        'Invalid month %s (range %s-%s)',
+                        $month,
+                        $dateFrom->format('Y-m-d'),
+                        $dateTo->format('Y-m-d')
+                    )
+                );
             }
 
             $monthlyDemand[$item['variant_id']][$month] += $item['quantity'];
