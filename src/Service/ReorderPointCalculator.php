@@ -71,23 +71,32 @@ class ReorderPointCalculator
         );
 
         $coefficientOfService = $this->getCoefficientOfService($variantId);
-        $securityStock = $this->getSecurityStock($demand, $lead, $leadDaysAdjustment, $coefficientOfService);
+
+        $securityStock = $this->getSecurityStock($demand, $lead, 0, $coefficientOfService);
+        $adjustedSecurityStock = $this->getSecurityStock($demand, $lead, $leadDaysAdjustment, $coefficientOfService);
 
         // round up ROP 1.1 => 2 (ceil)
         // round down Security Stock 0.9 => 0 (floor)
 
         $leadTimeInDays = $lead->averageLeadTimeInDays + $leadDaysAdjustment;
+
+        $adjustedRop = $demand->demandAveragePerDay === null || $lead->averageLeadTimeInDays === null
+            ? null :
+            ceil($adjustedSecurityStock + $demand->demandAveragePerDay * $leadTimeInDays);
+
         $rop = $demand->demandAveragePerDay === null || $lead->averageLeadTimeInDays === null
             ? null :
-            ceil($securityStock + $demand->demandAveragePerDay * $leadTimeInDays);
+            ceil($securityStock + $demand->demandAveragePerDay * $lead->averageLeadTimeInDays);
 
         return new ReorderPoint(
             $productId,
             $variantId,
             $rop,
+            $adjustedRop,
             $demand,
             $lead,
             $securityStock,
+            $adjustedSecurityStock,
             $this->variantGroupCalculator->getGroupKey($variantId),
             $coefficientOfService,
             $leadDaysAdjustment,

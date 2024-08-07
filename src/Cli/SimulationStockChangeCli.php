@@ -11,6 +11,7 @@ use App\Repository\VomRepository;
 use App\Service\DataTrait;
 use App\Service\DemandCalculator;
 use App\Service\ReorderPointCalculator;
+use App\Service\VariantGroupCalculator;
 use DateTimeImmutable;
 use Symfony\Component\Console\Attribute\AsCommand;
 use Symfony\Component\Console\Command\Command;
@@ -26,6 +27,7 @@ class SimulationStockChangeCli extends Command
     use OutputTrait;
 
     public function __construct(
+        private VariantGroupCalculator $variantGroupCalculator,
         private LogisticsRepository $logisticsRepository,
         private ReorderPointCalculator $ropCalculator,
         private Pm2Repository $pm2Repository,
@@ -46,7 +48,8 @@ class SimulationStockChangeCli extends Command
         $io = new SymfonyStyle($input, $output);
 
         // monday
-        $startDate = new DateTimeImmutable('2024-02-05');
+        $startDate = new DateTimeImmutable('2023-01-02');
+//        $startDate = new DateTimeImmutable('2024-02-05');
 
         $vendorOrders = $this->getVendorOrders($startDate);
         $stock = $this->getStock($startDate);
@@ -70,8 +73,8 @@ class SimulationStockChangeCli extends Command
                     'variant_in_vendor_orders' => $item['variantInVendorOrders'],
                     'accumulated_stock' => $item['stock'] + $item['variantInVendorOrders'],
 
-                    'rop' => $item['ropObject']->rop,
-                    'rop_security_stock' => $item['ropObject']->securityStock,
+                    'rop' => $item['ropObject']->adjustedRop,
+                    'rop_security_stock' => $item['ropObject']->adjustedSecurityStock,
                     'rop_z_coefficient' => $item['ropObject']->zCoefficient,
                     'rop_group' => $item['ropObject']->group,
                     'rop_lead_days_adjustment' => $item['ropObject']->leadDaysAdjustment,
@@ -86,6 +89,9 @@ class SimulationStockChangeCli extends Command
                     'demand_monthly' => implode(',', $item['ropObject']->demand->monthlyDemand),
 
                     'lead_random_days' => $item['leadRandomDays'],
+
+                    'real_rop' => $item['ropObject']->rop,
+                    'real_rop_security_stock' => $item['ropObject']->securityStock,
 
                     'id' => sprintf(
                         '%s %s %d',
@@ -112,7 +118,7 @@ class SimulationStockChangeCli extends Command
         array $vendorOrders,
         array $inventory,
         int $iteration = 0,
-        int $leadDaysAdjustment = 3
+        int $leadDaysAdjustment = 4
     ): array {
         $io->info(sprintf('Ordering for %s (%d iteration)', $today->format('Y-m-d'), $iteration + 1));
 
@@ -174,18 +180,19 @@ class SimulationStockChangeCli extends Command
                 array_map(fn ($order) => $order['quantity'], $vendorOrders[$rop->variantId] ?? [])
             );
 
-            $diff = $rop->rop - $variantStock - $variantInVendorOrders;
+            $diff = 0;
+            if ($variantStock <= $rop->rop) {
+                $diff = $rop->adjustedRop - ($leadDaysAdjustment * $rop->demand->demandAveragePerDay) - $variantStock - $variantInVendorOrders + (($rop->lead->averageLeadTimeInDays + $leadDaysAdjustment) * $rop->demand->demandAveragePerDay);
+            }
 
             $newInventory[$rop->variantId] = [
                 'variant_id' => $rop->variantId,
                 'product_id' => $rop->productId,
             ];
 
+            $leadRandomDays = 0;
+
             $vendorOrders[$rop->variantId] ??= [];
-            $leadRandomDays = rand(
-                0,
-                (int)($rop->lead->leadTimeStandardDeviation)
-            );
             $result[] = $vendorOrders[$rop->variantId][] = [
                 'ropObject' => $rop,
                 'rop' => $rop->rop,
@@ -201,7 +208,8 @@ class SimulationStockChangeCli extends Command
             ];
         }
 
-        if ($iteration > 40) {
+//        if ($iteration > 40) {
+            if ($iteration > 144) {
             return $result;
         }
 
@@ -218,9 +226,8 @@ class SimulationStockChangeCli extends Command
                 $stock,
                 $demand,
                 $vendorOrders,
-                $newInventory,
-                $iteration + 1,
-                $addDays
+                $inventory,
+                $iteration + 1
             )
         );
     }
@@ -233,6 +240,7 @@ class SimulationStockChangeCli extends Command
         int $leadDaysAdjustment
     ): array {
         $this->demandCalculator->initDemand($today, 1);
+        $this->variantGroupCalculator->calculateVariantGroups($today, 1);
 
         $rops = [];
         $io->progressStart(count($inventory));
@@ -242,10 +250,14 @@ class SimulationStockChangeCli extends Command
                 continue;
             }
 
+            $group = $this->variantGroupCalculator->getVolumeGroup($item['variant_id']);
+            if (!in_array($group, ['A+', 'A'])) {
+                continue;
+            }
+
             $rops[] = $this->ropCalculator->calculate($item['variant_id'], $item['product_id'], $leadDaysAdjustment);
         }
         $io->progressFinish();
-
         return $rops;
     }
 
@@ -889,6 +901,7 @@ class SimulationStockChangeCli extends Command
 
     private function getStock(DateTimeImmutable $startDate): array
     {
+        return [];
         $stock = $this->logisticsRepository->getStock($startDate);
         $return = [];
         foreach ($stock as $item) {
