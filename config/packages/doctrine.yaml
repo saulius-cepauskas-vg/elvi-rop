@@ -30,6 +30,20 @@ doctrine:
                 default_table_options:
                     charset: utf8mb4
                     collate: utf8mb4_unicode_ci
+            sos:
+                driver:   pdo_mysql
+                host:     '%env(DOCTRINE_PERCONA_HOST)%'
+                port:     '%env(DOCTRINE_PERCONA_PORT)%'
+                user:     '%env(DOCTRINE_PERCONA_USER)%'
+                password: '%env(DOCTRINE_PERCONA_PASSWORD)%'
+                dbname:   '%env(DOCTRINE_PERCONA_DATABASE_SOS)%'
+                options:
+                    !php/const PDO::MYSQL_ATTR_SSL_CA: ''
+                    !php/const PDO::MYSQL_ATTR_SSL_VERIFY_SERVER_CERT: false
+                charset: utf8mb4
+                default_table_options:
+                    charset: utf8mb4
+                    collate: utf8mb4_unicode_ci
             logistics:
                 driver:   pdo_mysql
                 host:     '%env(DOCTRINE_PERCONA_HOST)%'
