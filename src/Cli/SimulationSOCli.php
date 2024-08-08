@@ -54,7 +54,7 @@ class SimulationSOCli extends Command
         $data = [];
         $totals = ['rows' => 0, 'so_qty_sum' => 0, 'rop_sum' => 0];
         foreach ($items as $item) {
-            $rop = $this->calculator->calculate($item['variant_id'], $item['product_id']);
+            $rop = $this->calculator->calculate($item['variant_id'], $item['product_id'], new \DateTimeImmutable());
 
             if ($rop->lead->leadTimeStandardDeviation > 10) {
                 $io->warning(

@@ -10,6 +10,7 @@ use App\Repository\Pm2Repository;
 use App\Repository\VomRepository;
 use App\Service\DataTrait;
 use App\Service\DemandCalculator;
+use App\Service\ForecastDemandCalculator;
 use App\Service\ReorderPointCalculator;
 use App\Service\VariantGroupCalculator;
 use DateTimeImmutable;
@@ -27,6 +28,7 @@ class SimulationStockChangeCli extends Command
     use OutputTrait;
 
     public function __construct(
+        private ForecastDemandCalculator $forecastDemandCalculator,
         private VariantGroupCalculator $variantGroupCalculator,
         private LogisticsRepository $logisticsRepository,
         private ReorderPointCalculator $ropCalculator,
@@ -49,7 +51,7 @@ class SimulationStockChangeCli extends Command
 
         // monday
         $startDate = new DateTimeImmutable('2023-01-02');
-//        $startDate = new DateTimeImmutable('2024-02-05');
+//        $startDate = new DateTimeImmutable('2024-07-29');
 
         $vendorOrders = $this->getVendorOrders($startDate);
         $stock = $this->getStock($startDate);
@@ -209,7 +211,7 @@ class SimulationStockChangeCli extends Command
         }
 
 //        if ($iteration > 40) {
-            if ($iteration > 144) {
+        if ($iteration >144) {
             return $result;
         }
 
@@ -250,12 +252,18 @@ class SimulationStockChangeCli extends Command
                 continue;
             }
 
-            $group = $this->variantGroupCalculator->getVolumeGroup($item['variant_id']);
-            if (!in_array($group, ['A+', 'A'])) {
-                continue;
-            }
+//            $group = $this->variantGroupCalculator->getVolumeGroup($item['variant_id']);
+//            if (!in_array($group, ['A+', 'A'])) {
+//                continue;
+//            }
 
-            $rops[] = $this->ropCalculator->calculate($item['variant_id'], $item['product_id'], $leadDaysAdjustment);
+            $rops[] = $this->ropCalculator->calculate(
+                $item['variant_id'],
+                $item['product_id'],
+                $today,
+                $leadDaysAdjustment,
+                false
+            );
         }
         $io->progressFinish();
         return $rops;
@@ -352,6 +360,10 @@ class SimulationStockChangeCli extends Command
                 ];
             }
         }
+
+        $inventory = array_filter($inventory, fn ($item) => !empty($item['variant_id']));
+
+        return array_filter($inventory, fn ($item) => $this->forecastDemandCalculator->hasDemand($item['variant_id']));
 
         // all included
         $ids = [
@@ -901,7 +913,6 @@ class SimulationStockChangeCli extends Command
 
     private function getStock(DateTimeImmutable $startDate): array
     {
-        return [];
         $stock = $this->logisticsRepository->getStock($startDate);
         $return = [];
         foreach ($stock as $item) {
