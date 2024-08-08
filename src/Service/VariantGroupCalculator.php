@@ -49,6 +49,8 @@ class VariantGroupCalculator
             'variation' => [],
             'intersection' => [],
         ];
+        $this->variantVolumeGroups = [];
+        $this->variantVariationGroups = [];
 
         $demand = $this->getDemand();
 
