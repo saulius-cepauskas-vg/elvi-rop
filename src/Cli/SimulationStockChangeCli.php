@@ -27,6 +27,10 @@ class SimulationStockChangeCli extends Command
     use DataTrait;
     use OutputTrait;
 
+    private string $startingDate = '2023-01-02'; //2024-07-29
+    private int $iterationsCount = 144;
+    private bool $useForecastInsteadDemand = false;
+
     public function __construct(
         private ForecastDemandCalculator $forecastDemandCalculator,
         private VariantGroupCalculator $variantGroupCalculator,
@@ -50,8 +54,7 @@ class SimulationStockChangeCli extends Command
         $io = new SymfonyStyle($input, $output);
 
         // monday
-        $startDate = new DateTimeImmutable('2023-01-02');
-//        $startDate = new DateTimeImmutable('2024-07-29');
+        $startDate = new DateTimeImmutable($this->startingDate);
 
         $vendorOrders = $this->getVendorOrders($startDate);
         $stock = $this->getStock($startDate);
@@ -184,7 +187,9 @@ class SimulationStockChangeCli extends Command
 
             $diff = 0;
             if ($variantStock <= $rop->rop) {
-                $diff = ceil($rop->adjustedRop - ($leadDaysAdjustment * $rop->demand->demandAveragePerDay) - $variantStock - $variantInVendorOrders + (($rop->lead->averageLeadTimeInDays + $leadDaysAdjustment) * $rop->demand->demandAveragePerDay));
+                $diff = ceil(
+                    $rop->adjustedRop - ($leadDaysAdjustment * $rop->demand->demandAveragePerDay) - $variantStock - $variantInVendorOrders + (($rop->lead->averageLeadTimeInDays + $leadDaysAdjustment) * $rop->demand->demandAveragePerDay)
+                );
             }
 
             $newInventory[$rop->variantId] = [
@@ -210,8 +215,7 @@ class SimulationStockChangeCli extends Command
             ];
         }
 
-//        if ($iteration > 40) {
-        if ($iteration >144) {
+        if ($iteration >= $this->iterationsCount) {
             return $result;
         }
 
@@ -241,7 +245,10 @@ class SimulationStockChangeCli extends Command
         array $inventory,
         int $leadDaysAdjustment
     ): array {
-        $this->demandCalculator->initDemand($today, 1);
+        if (!$this->useForecastInsteadDemand) {
+            $this->demandCalculator->initDemand($today, 1);
+        }
+
         $this->variantGroupCalculator->calculateVariantGroups($today, 1);
 
         $rops = [];
@@ -262,7 +269,7 @@ class SimulationStockChangeCli extends Command
                 $item['product_id'],
                 $today,
                 $leadDaysAdjustment,
-                false
+                $this->useForecastInsteadDemand
             );
         }
         $io->progressFinish();
@@ -280,70 +287,6 @@ class SimulationStockChangeCli extends Command
 
     private function getSimulationInventory(array $stock, array $demand): array
     {
-        // todo: remove me
-//        return [
-//
-//            'b6612b319c02ebfb91099c615514cf27' => [
-//                'variant_id' => 'b6612b319c02ebfb91099c615514cf27',
-//                'product_id' => 'AOS-1' // AOSEPT PLUS - 360ml
-//            ],
-//            '762e6ae16e01832364adbe6181fb5ea1' => [
-//                'variant_id' => '762e6ae16e01832364adbe6181fb5ea1',
-//                'product_id' => 'AOSH-1' // AOSEPT PLUS with HydraGlyde - 360ml
-//            ],
-//            'ffee2040f6ddc6bf3d0cf0b0c5946b4f' => [
-//                'variant_id' => 'ffee2040f6ddc6bf3d0cf0b0c5946b4f',
-//                'product_id' => 'BIOT-2' // Biotrue All in one - 2x300ml inkl. Behälter
-//            ],
-//            '584d957128cd8cabac61debe47c9c153' => [
-//                'variant_id' => '584d957128cd8cabac61debe47c9c153',
-//                'product_id' => 'ES-3' // EasySept 3Pack - 3x360ml
-//            ],
-//            '1227f82a942f98f9fb0056207f7ca3f0' => [
-//                'variant_id' => '1227f82a942f98f9fb0056207f7ca3f0',
-//                'product_id' => 'BIOT-1' // Biotrue - 300ml
-//            ],
-//            '9792ba97048512e5c9111de1a02e6311' => [
-//                'variant_id' => '9792ba97048512e5c9111de1a02e6311',
-//                'product_id' => 'OFP-2-1' // Opti-Free Puremoist 2x300ml plus 90ml
-//            ],
-//            '8faff017491066d124687edf4f6aaa4e' => [
-//                'variant_id' => '8faff017491066d124687edf4f6aaa4e',
-//                'product_id' => 'DLAH-1' // DLENS All in One mit Hyaluron - 360ml inkl. Behälter
-//            ],
-//
-//
-//            '6c768942b4c0041b48944342a92e23a7' => [
-//                'variant_id' => '6c768942b4c0041b48944342a92e23a7',
-//                'product_id' => 'DACP-90' // DAILIES AquaComfort PLUS 90
-//            ],
-//            'acca0c13091b0353faa2c68e12505086' => [
-//                'variant_id' => 'acca0c13091b0353faa2c68e12505086',
-//                'product_id' => 'DACP-90' // DAILIES AquaComfort PLUS 90
-//            ],
-//            '69785474ce56d82771d8fd2d3124a6fe' => [
-//                'variant_id' => '69785474ce56d82771d8fd2d3124a6fe',
-//                'product_id' => 'DACP-90' // DAILIES AquaComfort PLUS 90
-//            ],
-//
-//            '4acb925edfdd90cfad9be342a5b266a3' => [
-//                'variant_id' => '4acb925edfdd90cfad9be342a5b266a3',
-//                'product_id' => 'AO-6' //Acuvue Oasys - 6 Kontaktlinsen
-//            ],
-//            '32f0bcf01b3ec235f2178b560440b753' => [
-//                'variant_id' => '32f0bcf01b3ec235f2178b560440b753',
-//                'product_id' => 'DT1-90' // DAILIES TOTAL 1 - 90
-//            ],
-//            '373609fab950b44b2abaa0ff2509839b' => [
-//                'variant_id' => '373609fab950b44b2abaa0ff2509839b',
-//                'product_id' => 'DT1-90' // DAILIES TOTAL 1 - 90
-//            ],
-//            '4d19c26354c9524874449b7374db2456' => [
-//                'variant_id' => '4d19c26354c9524874449b7374db2456',
-//                'product_id' => 'DT1-90' // DAILIES TOTAL 1 - 90
-//            ],
-//        ];
-
         $inventory = [];
         foreach ($stock as $item) {
             $inventory[$item['variant_id']] = [
@@ -363,7 +306,12 @@ class SimulationStockChangeCli extends Command
 
         $inventory = array_filter($inventory, fn ($item) => !empty($item['variant_id']));
 
-        return array_filter($inventory, fn ($item) => $this->forecastDemandCalculator->hasDemand($item['variant_id']));
+        if ($this->useForecastInsteadDemand) {
+            return array_filter(
+                $inventory,
+                fn ($item) => $this->forecastDemandCalculator->hasDemand($item['variant_id'])
+            );
+        }
 
         // all included
         $ids = [
@@ -907,8 +855,6 @@ class SimulationStockChangeCli extends Command
         ];
 
         return array_filter($inventory, fn ($item) => in_array($item['product_id'], $ids, true));
-
-        return $inventory;
     }
 
     private function getStock(DateTimeImmutable $startDate): array
