@@ -6,9 +6,7 @@ namespace App\Service;
 
 use App\Dto\Demand;
 use App\Dto\Lead;
-use App\Repository\DwhRepository;
 use DateTimeImmutable;
-use Symfony\Contracts\Cache\CacheInterface;
 
 class ForecastDemandCalculator
 {
@@ -58,7 +56,7 @@ class ForecastDemandCalculator
     {
         foreach ($this->data['result'] as $data) {
             if ($data['partNumber'] === $variantId) {
-                return $data['demandForecast']['ates'];
+                return $data['demandForecast']['consensus'];
             }
         }
 
