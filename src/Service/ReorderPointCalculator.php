@@ -15,6 +15,7 @@ class ReorderPointCalculator
         private VariantGroupCalculator $variantGroupCalculator,
         private DemandCalculator $demandCalculator,
         private LeadCalculator $leadCalculator,
+        private ForecastDemandCalculator $forecastDemandCalculator,
 
         private array $coefficientsOfService = [
             'A+ X' => 2.33, // 99%
@@ -60,15 +61,23 @@ class ReorderPointCalculator
         $this->demandCalculator->initDemand(new DateTimeImmutable(), 1);
     }
 
-    public function calculate(string $variantId, string $productId, int $leadDaysAdjustment = 0): ReorderPoint
-    {
-        $demand = $this->demandCalculator->getDemand($productId, $variantId);
+    public function calculate(
+        string $variantId,
+        string $productId,
+        DateTimeImmutable $today,
+        int $leadDaysAdjustment = 0,
+        bool $useForecast = false
+    ): ReorderPoint {
 
         $lead = $this->leadCalculator->getLead(
             $productId,
             $variantId,
             $this->variantGroupCalculator->getGroupVariantIds($variantId),
         );
+
+        $demand = $useForecast
+            ? $this->forecastDemandCalculator->getDemand($productId, $variantId, $today, $lead)
+            : $this->demandCalculator->getDemand($productId, $variantId);
 
         $coefficientOfService = $this->getCoefficientOfService($variantId);
 
