@@ -184,7 +184,7 @@ class SimulationStockChangeCli extends Command
 
             $diff = 0;
             if ($variantStock <= $rop->rop) {
-                $diff = $rop->adjustedRop - ($leadDaysAdjustment * $rop->demand->demandAveragePerDay) - $variantStock - $variantInVendorOrders + (($rop->lead->averageLeadTimeInDays + $leadDaysAdjustment) * $rop->demand->demandAveragePerDay);
+                $diff = ceil($rop->adjustedRop - ($leadDaysAdjustment * $rop->demand->demandAveragePerDay) - $variantStock - $variantInVendorOrders + (($rop->lead->averageLeadTimeInDays + $leadDaysAdjustment) * $rop->demand->demandAveragePerDay));
             }
 
             $newInventory[$rop->variantId] = [
