@@ -13,6 +13,8 @@ class VariantGroupCalculator
     use DataTrait;
     use StandardDeviationTrait;
 
+    private ?array $demandCache = null;
+
     private array $variantVolumeGroups = [];
 
     private array $variantVariationGroups = [];
@@ -52,7 +54,9 @@ class VariantGroupCalculator
         $this->variantVolumeGroups = [];
         $this->variantVariationGroups = [];
 
-        $demand = $this->getDemand();
+        if ($this->demandCache === null) {
+            $this->demandCache = $this->getDemand();
+        }
 
         $dateFrom = $date->modify(sprintf('-%d year', $years));
         $dateTo = $date->modify('-1 day')->setTime(23, 59, 59);
@@ -70,8 +74,15 @@ class VariantGroupCalculator
 
         $variants = [];
         $monthlyDemand = [];
-        foreach ($demand as $item) {
+        foreach ($this->demandCache as $index => $item) {
+
+
             $itemDate = new DateTimeImmutable($item['order_created_at']);
+
+            if ($itemDate < $dateFrom) {
+                unset($this->demandCache[$index]);
+            }
+
             if ($itemDate < $dateFrom || $itemDate > $dateTo) {
                 continue;
             }
@@ -121,9 +132,9 @@ class VariantGroupCalculator
             $monthlyDemand[$item['variant_id']][$month] += $item['quantity'];
         }
 
-        usort($variants, function ($a, $b) {
-            return $b['quantity'] <=> $a['quantity'];
-        });
+//        usort($variants, function ($a, $b) {
+//            return $b['quantity'] <=> $a['quantity'];
+//        });
 
         $prevVolume = 0;
         foreach ($variants as $item) {
