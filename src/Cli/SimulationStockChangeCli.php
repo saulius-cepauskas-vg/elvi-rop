@@ -28,7 +28,7 @@ class SimulationStockChangeCli extends Command
     use DataTrait;
     use OutputTrait;
 
-    private string $startingDate = '2023-01-02'; //2024-07-29
+    private string $startingDate = '2023-01-02'; // 2024-07-29
     private int $iterationsCount = 144;
     private bool $useForecastInsteadDemand = false;
 
@@ -307,6 +307,7 @@ class SimulationStockChangeCli extends Command
         }
 
         $inventory = array_filter($inventory, fn ($item) => !empty($item['variant_id']));
+        $inventory = array_filter($inventory, fn ($item) => !empty($item['product_id']));
 
         if ($this->useForecastInsteadDemand) {
             return array_filter(
@@ -326,7 +327,7 @@ class SimulationStockChangeCli extends Command
             'SER-REFIT-M-90-180',
         ];
 
-        $variants = $this->sosRepository->getItems('242db0d8-8f8e-4a10-a78b-1deebd04c93b');
+        $variants = $this->sosRepository->getDefaultItems();
 
         return array_filter(
             $inventory,

@@ -6,6 +6,7 @@ namespace App\Service;
 
 use App\Repository\DwhRepository;
 use App\Repository\Pm2Repository;
+use App\Repository\SosRepository;
 use App\Repository\VomRepository;
 use Symfony\Contracts\Cache\CacheInterface;
 
@@ -17,6 +18,7 @@ trait DataTrait
     private CacheInterface $cache;
     private DwhRepository $dwhRepository;
     private VomRepository $vomRepository;
+    private SosRepository $sosRepository;
     private Pm2Repository $pm2Repository;
 
     private bool $isCacheEnabled = true;
@@ -34,7 +36,9 @@ trait DataTrait
     {
         return $this->getCached(sprintf('demand_%s', date('Y-m-d')), function () {
             if (empty($this->demand)) {
+                $variants = $this->sosRepository->getDefaultItems();
                 $this->demand = $this->dwhRepository->getItems();
+                $this->demand = array_filter($this->demand, fn ($item) => in_array($item['variant_id'], $variants, true));
             }
 
             return $this->demand;

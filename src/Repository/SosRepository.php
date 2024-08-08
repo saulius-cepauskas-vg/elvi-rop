@@ -12,6 +12,11 @@ class SosRepository
     {
     }
 
+    public function getDefaultItems(): array
+    {
+        return $this->getItems('242db0d8-8f8e-4a10-a78b-1deebd04c93b');
+    }
+
     public function getItems(string $history): array
     {
         return $this->sosConnection->fetchFirstColumn(

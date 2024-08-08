@@ -6,6 +6,7 @@ namespace App\Service;
 
 use App\Dto\Demand;
 use App\Repository\DwhRepository;
+use App\Repository\SosRepository;
 use DateTimeImmutable;
 use Symfony\Contracts\Cache\CacheInterface;
 
@@ -21,6 +22,7 @@ class DemandCalculator
 
     public function __construct(
         private CacheInterface $cache,
+        private SosRepository $sosRepository,
         private DwhRepository $dwhRepository,
         private int $yearCount = 1,
     ) {

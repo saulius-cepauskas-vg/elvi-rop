@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace App\Service;
 
 use App\Repository\DwhRepository;
+use App\Repository\SosRepository;
 use DateTimeImmutable;
 use Symfony\Contracts\Cache\CacheInterface;
 
@@ -30,6 +31,7 @@ class VariantGroupCalculator
     public function __construct(
         private CacheInterface $cache,
         private DwhRepository $dwhRepository,
+        private SosRepository $sosRepository,
         private array $groupsVolume = [
             'A+' => 0.5,
             'A' => 0.75,
